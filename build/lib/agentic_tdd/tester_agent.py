@@ -80,25 +80,155 @@ class TesterAgent(Agent):
             
             self.logger.debug("Generating test using LLM")
             # Generate the test using LLM
-            test_content = self.llm_provider.generate_code(prompt, language="python")
+            new_test_content = self.llm_provider.generate_code(prompt, language="python")
             
             # Create a test file name based on the kata
             test_file_name = f"{generate_test_module_name(self.kata_content)}.py"
             test_file = self.work_dir / test_file_name
             
-            self.logger.debug(f"Writing generated test to file: {test_file}")
-            # Write the test to file
-            with open(test_file, 'w', encoding='utf-8') as f:
-                f.write(test_content)
+            # Check if test file already exists
+            if test_file.exists():
+                # If file exists, read the current content
+                with open(test_file, 'r', encoding='utf-8') as f:
+                    existing_file_content = f.read()
+                
+                # Append the new test to the existing content
+                # This is a simple approach - in a more sophisticated version, 
+                # we might want to parse the file to insert the test in the right place
+                updated_content = self._append_new_test(existing_file_content, new_test_content)
+            else:
+                # If file doesn't exist, use the generated content as is
+                updated_content = new_test_content
             
-            self.logger.info(f"Test file created successfully: {test_file}")
+            self.logger.debug(f"Writing updated test to file: {test_file}")
+            # Write the updated content to file
+            with open(test_file, 'w', encoding='utf-8') as f:
+                f.write(updated_content)
+            
+            self.logger.info(f"Test file updated successfully: {test_file}")
             return {
                 'test_file': str(test_file),
-                'test_content': test_content
+                'test_content': updated_content
             }
         except Exception as e:
             self.logger.error(f"Error generating test: {str(e)}")
             raise AgentException(f"Failed to generate test: {str(e)}")
+    
+    def _append_new_test(self, existing_content: str, new_test: str) -> str:
+        """Append a new test to existing test file content."""
+        # Parse the new test to extract just the method
+        new_test_lines = new_test.split('\n')
+        
+        # Find the actual test method in the new test content
+        # Look for a method that starts with 'def test_'
+        test_method_lines = []
+        import_lines = []
+        
+        # Extract imports and test method separately
+        in_method = False
+        method_indentation = ""
+        
+        for line in new_test_lines:
+            line_stripped = line.lstrip()
+            
+            # Collect import statements
+            if line_stripped.startswith('import ') or line_stripped.startswith('from '):
+                import_lines.append(line)
+                continue
+            
+            # Look for test method
+            if line_stripped.startswith('def test_'):
+                in_method = True
+                # Calculate the indentation of this line to maintain it for the method body
+                method_indentation = line[:len(line) - len(line.lstrip())]
+                test_method_lines.append(line)
+            elif in_method:
+                # Check if this line is still part of the method (indented more than the def)
+                current_indent = line[:len(line) - len(line.lstrip())]
+                if line_stripped == '' or len(current_indent) > len(method_indentation) or line_stripped.startswith('#'):
+                    test_method_lines.append(line)
+                else:
+                    # This is the end of the test method
+                    break
+        
+        if not test_method_lines:
+            # If we couldn't extract a method, just append the whole new test
+            return self._simple_append(existing_content, new_test)
+        
+        # Now insert the extracted method into the existing content
+        existing_lines = existing_content.split('\n')
+        
+        # Find the class definition to insert into
+        class_line_index = -1
+        for i, line in enumerate(existing_lines):
+            if line.strip().startswith('class '):
+                class_line_index = i
+                break
+        
+        if class_line_index == -1:
+            # No class found, simple append
+            return self._simple_append(existing_content, new_test)
+        
+        # Find where the class ends (next non-indented line or end of file)
+        insert_index = len(existing_lines)
+        for i in range(class_line_index + 1, len(existing_lines)):
+            line = existing_lines[i]
+            if line.strip() and not line.startswith(' ') and not line.startswith('\t'):
+                insert_index = i
+                break
+        
+        # Add proper indentation to the test method lines
+        indented_method_lines = []
+        for i, line in enumerate(test_method_lines):
+            if i == 0:
+                # First line (def) should have 4 spaces indentation
+                indented_method_lines.append('    ' + line.lstrip())
+            else:
+                # Other lines should maintain their relative indentation
+                if line.strip():  # Non-empty line
+                    indented_method_lines.append('    ' + line.lstrip())
+                else:
+                    indented_method_lines.append(line)  # Empty line as is
+        
+        # Insert the new method before the class ends
+        final_lines = existing_lines[:insert_index] + indented_method_lines + existing_lines[insert_index:]
+        
+        # Remove duplicate imports
+        final_lines = self._remove_duplicate_imports(final_lines, import_lines)
+        
+        return '\n'.join(final_lines)
+    
+    def _simple_append(self, existing_content: str, new_content: str) -> str:
+        """Simple append with import deduplication."""
+        existing_lines = existing_content.split('\n')
+        new_lines = new_content.split('\n')
+        
+        # Remove common imports from the new content if they exist in the existing content
+        existing_imports = {line.strip() for line in existing_lines if line.strip().startswith('import ') or line.strip().startswith('from ')}
+        filtered_new_lines = [line for line in new_lines if not (line.strip().startswith('import ') or line.strip().startswith('from ')) or line.strip() not in existing_imports]
+        
+        # Combine the existing content with the new test
+        return existing_content + '\n\n' + '\n'.join(filtered_new_lines)
+    
+    def _remove_duplicate_imports(self, lines: list, new_imports: list) -> list:
+        """Remove duplicate imports from the list of lines."""
+        existing_imports = {line.strip() for line in lines if line.strip().startswith('import ') or line.strip().startswith('from ')}
+        filtered_imports = [line for line in new_imports if line.strip() not in existing_imports]
+        
+        # Return lines with filtered imports at the top
+        if filtered_imports:
+            # Find where existing imports end
+            import_end_index = 0
+            for i, line in enumerate(lines):
+                if line.strip() and not (line.strip().startswith('import ') or line.strip().startswith('from ')):
+                    import_end_index = i
+                    break
+            else:
+                import_end_index = len(lines)
+            
+            return lines[:import_end_index] + filtered_imports + lines[import_end_index:]
+        
+        return lines
     
     def _read_existing_code(self) -> str:
         """Read existing implementation code to provide context."""

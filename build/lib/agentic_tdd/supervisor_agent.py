@@ -7,6 +7,7 @@ from .core import Agent, AgentConfig
 from .tester_agent import TesterAgent
 from .implementer_agent import ImplementerAgent
 from .refactorer_agent import RefactorerAgent
+from .llm import LLMProvider, create_commit_message_prompt
 import os
 from pathlib import Path
 import git
@@ -64,18 +65,27 @@ class SupervisorAgent(Agent):
             test_result = tester.execute()
             print(f"{self.name}: {test_result['message']}")
             
+            # Generate and commit tester changes with LLM-generated message
+            test_commit_msg = self._generate_commit_message(tester, "test", self.cycle_count, test_result)
+            self._commit_agent_changes("test", test_commit_msg)
+            
             # 2. Implementer Agent: Make the test pass
             implementer = ImplementerAgent(str(self.work_dir), self.kata_description, self.config)
             impl_result = implementer.execute()
             print(f"{self.name}: {impl_result['message']}")
+            
+            # Generate and commit implementer changes with LLM-generated message
+            impl_commit_msg = self._generate_commit_message(implementer, "feat", self.cycle_count, impl_result)
+            self._commit_agent_changes("implement", impl_commit_msg)
             
             # 3. Refactorer Agent: Improve code quality
             refactorer = RefactorerAgent(str(self.work_dir), self.kata_description, self.config)
             refactor_result = refactorer.execute()
             print(f"{self.name}: {refactor_result['message']}")
             
-            # Commit changes to git
-            self._commit_changes(f"Cycle {self.cycle_count}: TDD iteration completed")
+            # Generate and commit refactorer changes with LLM-generated message
+            refactor_commit_msg = self._generate_commit_message(refactorer, "refactor", self.cycle_count, refactor_result)
+            self._commit_agent_changes("refactor", refactor_commit_msg)
             
             return {
                 'success': True,
@@ -87,8 +97,55 @@ class SupervisorAgent(Agent):
                 'message': f"TDD cycle failed with error: {str(e)}"
             }
     
-    def _commit_changes(self, message: str):
-        """Commit any changes to the git repository."""
+    def _generate_commit_message(self, agent, agent_type: str, cycle_count: int, agent_result: dict) -> str:
+        """Generate a descriptive commit message using LLM based on agent's work."""
+        try:
+            # Create an LLM provider for generating commit messages
+            llm_provider = LLMProvider(
+                model=self.config.model,
+                provider=self.config.provider,
+                api_key=self.config.api_key,
+                base_url=self.config.base_url
+            )
+            
+            # Create the prompt for the commit message
+            prompt = create_commit_message_prompt(agent_type, self.kata_content, agent_result, cycle_count)
+            
+            # Generate the commit message using the LLM
+            commit_message = llm_provider.generate_text(prompt).strip()
+            
+            # If the LLM returns a multi-line response, use only the first line (the commit subject)
+            commit_message = commit_message.split('\n')[0].strip()
+            
+            # Clean up any markdown formatting artifacts
+            commit_message = commit_message.replace('**', '').replace('*', '').strip()
+            
+            # Ensure the commit message follows conventional format
+            if not commit_message.startswith((agent_type + ':', agent_type + '(')):
+                # If LLM didn't include the type prefix, add it
+                if not commit_message.lower().startswith(agent_type):
+                    commit_message = f"{agent_type}: {commit_message}"
+            
+            # Ensure it's not too long (good practice for commit messages)
+            if len(commit_message) > 72:
+                # Try to truncate at a word boundary
+                commit_message = commit_message[:69].rsplit(' ', 1)[0] + '...'
+            
+            return commit_message
+        except Exception as e:
+            print(f"{self.name}: Failed to generate LLM commit message: {str(e)}, using default")
+            # Fallback to default message format
+            if agent_type == "test":
+                return f"test: add failing test for cycle {cycle_count}"
+            elif agent_type == "feat":
+                return f"feat: implement code to pass test in cycle {cycle_count}"
+            elif agent_type == "refactor":
+                return f"refactor: improve code quality after cycle {cycle_count}"
+            else:
+                return f"{agent_type}: update for cycle {cycle_count}"
+    
+    def _commit_agent_changes(self, agent_type: str, message: str):
+        """Commit changes made by a specific agent with descriptive message."""
         try:
             # Add all changes
             self.repo.git.add(A=True)
@@ -96,6 +153,6 @@ class SupervisorAgent(Agent):
             # Commit if there are changes
             if self.repo.is_dirty():
                 self.repo.index.commit(message)
-                print(f"{self.name}: Committed changes: {message}")
+                print(f"{self.name}: Committed {agent_type} changes: {message}")
         except Exception as e:
-            print(f"{self.name}: Failed to commit changes: {str(e)}")
+            print(f"{self.name}: Failed to commit {agent_type} changes: {str(e)}")
