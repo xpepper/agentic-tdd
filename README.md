@@ -45,6 +45,18 @@ Specify model/provider:
 agentic-tdd kata-description.md --model gpt-4o-mini --provider openai --api-key $OPENAI_API_KEY
 ```
 
+Specify working directory (where generated code will be saved):
+```bash
+agentic-tdd kata-description.md --work-dir ./my-kata-output
+```
+
+## Output
+
+The generated code kata will be saved in the working directory (specified with `--work-dir` or current directory by default). The structure will include:
+- Test files in `tests/` directory
+- Implementation files in `src/` directory (or root if no src directory exists)
+- Git repository with commit history showing the TDD process
+
 ## Development
 
 See [AGENTS.md](AGENTS.md) for development guidelines and [PROJECT.md](PROJECT.md) for project goals.
