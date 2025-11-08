@@ -91,7 +91,36 @@ The tool follows these steps:
 5. The Refactorer Agent improves code quality while keeping tests passing
 6. The cycle repeats until the kata requirements are fulfilled or max cycles reached
 
-Each step is committed to git, creating a clear history of the development process.
+Each step is committed to git, creating a clear history of the development process. Files are named dynamically based on the kata content to make them more meaningful.
+
+## Example Output
+
+When running agentic-tdd, you'll see output like:
+
+```
+Agentic TDD starting with:
+  Kata description: mars-rover-kata.md
+  Model: sonar-pro
+  Provider: perplexity
+  Base URL: https://api.perplexity.ai
+  Work directory: ./kata-output/
+  Max cycles: 1
+Supervisor: Starting TDD process...
+
+--- Cycle 1 ---
+Tester: Analyzing kata requirements and writing a new failing test...
+Supervisor: Tester agent completed. New test fails as expected: True
+Implementer: Implementing code to make tests pass...
+Supervisor: Implementer agent completed. All tests pass: True
+Refactorer: Analyzing code for potential improvements...
+Supervisor: Refactorer agent completed. All tests still pass: True
+Supervisor: Committed changes: Cycle 1: TDD iteration completed
+Supervisor: Completed cycle 1
+
+Agentic TDD completed: Supervisor agent completed 1 cycles
+```
+
+The resulting codebase in the work directory will contain implementation files and tests with meaningful names based on the kata content, along with a git history showing the TDD progression.
 
 ## Architecture
 
