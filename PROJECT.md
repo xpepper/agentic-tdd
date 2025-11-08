@@ -4,6 +4,19 @@ I want to build a multi-agent Test-Driven Development (TDD) CLI tool (`agentic-t
 ## First milestone
 I want to be able to run `agentic-tdd` with a custom provided code kata, providing the selected LLM models (e.g. ` qwen3-coder-plus`, their providers (e.g. `perplexity`), and their API keys.
 
+The shape of the command should be something like:
+
+```bash
+agentic-tdd ~/Documents/workspace/kata/rust/mars-rover-kata-10072025-bis/docs/kata_rules.md --model sonar-pro --provider openai --api-key $PERPLEXITY_API_KEY --work-dir ../agentic-tdd-kata/
+```
+
+Where:
+- `~/Documents/workspace/kata/rust/mars-rover-kata-10072025-bis/docs/kata_rules.md` is the path to the code kata description file
+- `sonar-pro` is the selected LLM model to use
+- `openai` is the provider of the LLM model
+- `$PERPLEXITY_API_KEY` is the API key to use for the LLM model
+- `../agentic-tdd-kata/` is the working directory for the TDD process
+
 ## Process to follow to develop `agentic-tdd`
 - I want to keep an up-to-date TODO list or backlog of the items we need to develop for `agentic-tdd`
 - I want each small feature we add to `agentic-tdd` to be committed, instead of just batching a lot of changes. Before committing, run any quality check you think we should run (e.g. formatting, linting, testing).
