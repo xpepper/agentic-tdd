@@ -4,6 +4,8 @@ I want to build a multi-agent Test-Driven Development (TDD) CLI tool (`agentic-t
 ## First milestone
 I want to be able to run `agentic-tdd` with a custom provided code kata, providing the selected LLM models (e.g. ` qwen3-coder-plus`, their providers (e.g. `perplexity`), and their API keys.
 
+Status: Core scaffold implemented with placeholder agents. Added `--dry-run` CLI flag to allow configuration inspection without executing the workflow loop.
+
 ## Process to follow to develop `agentic-tdd`
 - I want to keep an up-to-date TODO list or backlog of the items we need to develop for `agentic-tdd`
 - I want each small feature we add to `agentic-tdd` to be committed, instead of just batching a lot of changes. Before committing, run any quality check you think we should run (e.g. formatting, linting, testing).
