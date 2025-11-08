@@ -159,3 +159,44 @@ Refactoring Guidelines:
 Please provide the refactored code:
 """
     return prompt
+
+
+def create_commit_message_prompt(agent_type: str, kata_description: str, agent_result: dict, cycle_count: int) -> str:
+    """Create a prompt for generating a commit message."""
+    # Extract relevant information based on agent type
+    if agent_type == "test":
+        content_info = f"Test file: {agent_result.get('test_file', 'N/A')}\nTest content preview: {agent_result.get('test_content', '')[:200]}..."
+    elif agent_type == "feat":
+        content_info = f"Implementation files: {agent_result.get('implementation_files', [])}\nTests pass: {agent_result.get('tests_pass', False)}"
+    elif agent_type == "refactor":
+        content_info = f"Refactored files: {agent_result.get('refactored_files', [])}\nTests still pass: {agent_result.get('tests_pass', False)}"
+    else:
+        content_info = "Agent result details not available"
+    
+    prompt = f"""
+You are an expert in writing clear, descriptive git commit messages following conventional commit format.
+Your task is to generate a concise but informative commit message based on the work that was done.
+
+Agent Type: {agent_type}
+TDD Cycle: {cycle_count}
+Kata Description:
+{kata_description}
+
+Work Details:
+{content_info}
+
+Guidelines for commit messages:
+1. Use conventional commit format: {agent_type}: <description>
+2. Be concise but descriptive (50-70 characters for the subject line)
+3. Focus on what was accomplished, not how it was done
+4. Use present tense ("add", "fix", "refactor" not "added", "fixed", "refactored")
+5. Be specific about what functionality was affected
+
+Examples:
+- test: add failing test for rover movement validation
+- feat: implement rover forward movement with boundary checks
+- refactor: extract rover heading logic into separate functions
+
+Generate an appropriate commit message:
+"""
+    return prompt
