@@ -120,12 +120,11 @@ Existing Code:
 {existing_code if existing_code else "No existing code"}
 
 Instructions:
-1. Analyze the failing test to understand what functionality is missing
-2. Implement only the minimal code necessary to make this test pass
-3. Do not implement additional features beyond what the test requires
-4. Keep your implementation simple and focused
-5. Ensure all existing functionality continues to work
-6. Return only the implementation code
+1.  **Analyze the Failure:** Review the provided code and the specific test that is failing.
+2.  **Write Minimal Code:** Write *only* the code necessary to make that one failing test pass.
+3.  **Do Not Add New Features:** Do not "gold-plate" or add any behavior not specifically required by the failing test. "Red -> Green" is your only job.
+4.  **Ensure All Tests Pass:** After your change, all tests (old and new) must pass.
+5.  **Return only the implementation code**
 
 Please provide the implementation code:
 """
@@ -136,8 +135,8 @@ def create_refactorer_prompt(kata_description: str, code_to_refactor: str, exist
     """Create a prompt for the refactorer agent to improve code quality."""
     prompt = f"""
 You are a software development expert focused on code quality and maintainability.
-Your task is to refactor the provided code to improve its structure, readability,
-and maintainability while ensuring all tests continue to pass.
+Your role is to improve the internal structure of the code *without* changing its external behavior.
+All tests MUST pass before and after your work.
 
 Kata Description:
 {kata_description}
@@ -149,11 +148,11 @@ Existing Tests (for reference):
 {existing_tests}
 
 Refactoring Guidelines:
-1. Focus on improving code quality without changing behavior
-2. Look for opportunities to improve naming, structure, and organization
-3. Eliminate duplication and improve clarity
-4. Ensure all existing tests continue to pass
-5. Make only safe, incremental improvements
+1.  **Identify "Code Smells":** Look for duplication, unclear names, long methods, large classes, or poor modularity.
+2.  **Review Kata Constraints:** Ensure the code adheres to any special constraints in `KATA.md` (e.g., "no loops," "wrap primitives").
+3.  **Make Small Improvements:** Apply refactorings (e.g., "Extract Method," "Rename Variable") to make the code cleaner, more readable, and easier to maintain.
+4.  **Do Not Change Behavior:** You must NOT add new features or change existing functionality. All tests must continue to pass.
+5.  **Make only safe, incremental improvements**
 6. Do not add new functionality
 7. Return only the refactored code
 
