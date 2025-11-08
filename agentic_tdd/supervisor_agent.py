@@ -64,18 +64,24 @@ class SupervisorAgent(Agent):
             test_result = tester.execute()
             print(f"{self.name}: {test_result['message']}")
             
+            # Commit tester changes with descriptive message
+            self._commit_agent_changes("test", f"test: add failing test for cycle {self.cycle_count}")
+            
             # 2. Implementer Agent: Make the test pass
             implementer = ImplementerAgent(str(self.work_dir), self.kata_description, self.config)
             impl_result = implementer.execute()
             print(f"{self.name}: {impl_result['message']}")
+            
+            # Commit implementer changes with descriptive message
+            self._commit_agent_changes("implement", f"feat: implement code to pass test in cycle {self.cycle_count}")
             
             # 3. Refactorer Agent: Improve code quality
             refactorer = RefactorerAgent(str(self.work_dir), self.kata_description, self.config)
             refactor_result = refactorer.execute()
             print(f"{self.name}: {refactor_result['message']}")
             
-            # Commit changes to git
-            self._commit_changes(f"Cycle {self.cycle_count}: TDD iteration completed")
+            # Commit refactorer changes with descriptive message
+            self._commit_agent_changes("refactor", f"refactor: improve code quality after cycle {self.cycle_count}")
             
             return {
                 'success': True,
@@ -87,8 +93,8 @@ class SupervisorAgent(Agent):
                 'message': f"TDD cycle failed with error: {str(e)}"
             }
     
-    def _commit_changes(self, message: str):
-        """Commit any changes to the git repository."""
+    def _commit_agent_changes(self, agent_type: str, message: str):
+        """Commit changes made by a specific agent with descriptive message."""
         try:
             # Add all changes
             self.repo.git.add(A=True)
@@ -96,6 +102,6 @@ class SupervisorAgent(Agent):
             # Commit if there are changes
             if self.repo.is_dirty():
                 self.repo.index.commit(message)
-                print(f"{self.name}: Committed changes: {message}")
+                print(f"{self.name}: Committed {agent_type} changes: {message}")
         except Exception as e:
-            print(f"{self.name}: Failed to commit changes: {str(e)}")
+            print(f"{self.name}: Failed to commit {agent_type} changes: {str(e)}")

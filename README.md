@@ -91,7 +91,7 @@ The tool follows these steps:
 5. The Refactorer Agent improves code quality while keeping tests passing
 6. The cycle repeats until the kata requirements are fulfilled or max cycles reached
 
-Each step is committed to git, creating a clear history of the development process. Files are named dynamically based on the kata content to make them more meaningful.
+Each step is committed to git with meaningful, conventional commit messages, creating a clear history of the development process. Files are named dynamically based on the kata content to make them more meaningful.
 
 ## Example Output
 
@@ -110,17 +110,22 @@ Supervisor: Starting TDD process...
 --- Cycle 1 ---
 Tester: Analyzing kata requirements and writing a new failing test...
 Supervisor: Tester agent completed. New test fails as expected: True
+Supervisor: Committed test changes: test: add failing test for cycle 1
 Implementer: Implementing code to make tests pass...
 Supervisor: Implementer agent completed. All tests pass: True
+Supervisor: Committed implement changes: feat: implement code to pass test in cycle 1
 Refactorer: Analyzing code for potential improvements...
 Supervisor: Refactorer agent completed. All tests still pass: True
-Supervisor: Committed changes: Cycle 1: TDD iteration completed
+Supervisor: Committed refactor changes: refactor: improve code quality after cycle 1
 Supervisor: Completed cycle 1
 
 Agentic TDD completed: Supervisor agent completed 1 cycles
 ```
 
-The resulting codebase in the work directory will contain implementation files and tests with meaningful names based on the kata content, along with a git history showing the TDD progression.
+The resulting codebase in the work directory will contain implementation files and tests with meaningful names based on the kata content, along with a git history showing the TDD progression with conventional commit messages:
+- `test: add failing test for cycle X` - When the Tester agent adds new tests
+- `feat: implement code to pass test in cycle X` - When the Implementer agent implements functionality
+- `refactor: improve code quality after cycle X` - When the Refactorer agent improves the code
 
 ## Architecture
 
