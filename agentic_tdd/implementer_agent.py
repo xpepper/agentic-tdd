@@ -7,6 +7,7 @@ from .core import Agent, AgentException
 from .llm import LLMProvider, create_implementer_prompt
 from .test_runner import TestRunner
 from .logger import get_agent_logger
+from .utils import generate_module_name
 import os
 from pathlib import Path
 
@@ -83,7 +84,7 @@ class ImplementerAgent(Agent):
             impl_content = self.llm_provider.generate_code(prompt, language="python")
             
             # Create an implementation file name
-            impl_file_name = "calculator.py"  # Default name, could be more dynamic
+            impl_file_name = f"{generate_module_name(self.kata_content)}.py"
             impl_file = self.work_dir / impl_file_name
             
             self.logger.debug(f"Writing generated implementation to file: {impl_file}")
