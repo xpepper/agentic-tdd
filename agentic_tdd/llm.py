@@ -10,10 +10,11 @@ import os
 class LLMProvider:
     """Provider for LLM interactions."""
     
-    def __init__(self, model: str = "gpt-4", provider: str = "openai", api_key: Optional[str] = None):
+    def __init__(self, model: str = "gpt-4", provider: str = "openai", api_key: Optional[str] = None, base_url: Optional[str] = None):
         self.model = model
         self.provider = provider
         self.api_key = api_key or os.getenv(f"{provider.upper()}_API_KEY")
+        self.base_url = base_url
         
         # Initialize the LLM based on provider
         if provider.lower() == "openai":
@@ -24,10 +25,16 @@ class LLMProvider:
             )
         else:
             # For other providers that are OpenAI-compatible
+            # Use provided base_url if available, otherwise construct from provider name
+            if base_url:
+                api_base = base_url
+            else:
+                api_base = f"https://{provider}.openai.com/v1"
+            
             self.llm = ChatOpenAI(
                 model=model,
                 openai_api_key=self.api_key,
-                openai_api_base=f"https://{provider}.openai.com/v1",
+                openai_api_base=api_base,
                 temperature=0.7
             )
     

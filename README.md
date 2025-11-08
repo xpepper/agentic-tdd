@@ -33,6 +33,7 @@ agentic-tdd ~/path/to/kata_rules.md --model gpt-4 --provider openai --work-dir .
 - `--model`: LLM model to use (default: gpt-4)
 - `--provider`: LLM provider to use (default: openai)
 - `--api-key`: API key for the LLM provider (can use env vars instead)
+- `--base-url`: Base URL for the LLM provider (for OpenAI-compatible providers)
 - `--work-dir`: Working directory for the TDD process (required)
 - `--max-cycles`: Maximum number of TDD cycles to perform (default: 10)
 
@@ -45,6 +46,16 @@ export OPENAI_API_KEY="your-api-key"
 # or for other providers:
 export PERPLEXITY_API_KEY="your-api-key"
 ```
+
+### Usage with Custom Base URLs
+
+For OpenAI-compatible providers, you can specify a custom base URL:
+
+```bash
+agentic-tdd ~/path/to/kata_rules.md --model deepseek-coder --provider deepseek --base-url https://api.deepseek.com/ --work-dir ./kata-output/
+```
+
+This allows you to use providers like DeepSeek, iFlow, or any other OpenAI-compatible API by specifying the appropriate base URL.
 
 ## Example Kata Description
 

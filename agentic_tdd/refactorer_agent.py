@@ -20,7 +20,8 @@ class RefactorerAgent(Agent):
             self.llm_provider = LLMProvider(
                 model=config.model,
                 provider=config.provider,
-                api_key=config.api_key
+                api_key=config.api_key,
+                base_url=config.base_url
             )
             self.test_runner = TestRunner(self.work_dir)
             self.logger.info("Refactorer agent initialized successfully")
