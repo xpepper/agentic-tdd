@@ -12,7 +12,7 @@ from .config import get_config, set_config
 def read_kata_description(kata_file_path: str) -> str:
     """Read the kata description from a markdown file."""
     try:
-        with open(kata_file_path, 'r', encoding='utf-8') as file:
+        with open(kata_file_path, "r", encoding="utf-8") as file:
             return file.read()
     except FileNotFoundError:
         print(f"Error: Kata file '{kata_file_path}' not found.")
@@ -29,39 +29,24 @@ def main(args: Optional[List[str]] = None) -> int:
     )
     parser.add_argument(
         "kata_file",
-        help="Path to the markdown file containing the code kata description"
+        help="Path to the markdown file containing the code kata description",
     )
-    parser.add_argument(
-        "--model",
-        help="LLM model to use (e.g. qwen3-coder-plus)"
-    )
-    parser.add_argument(
-        "--provider",
-        help="LLM provider (e.g. perplexity)"
-    )
-    parser.add_argument(
-        "--api-key",
-        help="API key for the LLM provider"
-    )
+    parser.add_argument("--model", help="LLM model to use (e.g. qwen3-coder-plus)")
+    parser.add_argument("--provider", help="LLM provider (e.g. perplexity)")
+    parser.add_argument("--api-key", help="API key for the LLM provider")
     parser.add_argument(
         "--work-dir",
         default=".",
-        help="Working directory for the TDD process (default: current directory)"
+        help="Working directory for the TDD process (default: current directory)",
     )
     parser.add_argument(
-        "--max-cycles",
-        type=int,
-        help="Maximum number of TDD cycles to run"
+        "--max-cycles", type=int, help="Maximum number of TDD cycles to run"
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Enable verbose output"
-    )
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Prepare configuration and exit without running workflow"
+        help="Prepare configuration and exit without running workflow",
     )
 
     # Parse arguments
