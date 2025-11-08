@@ -46,6 +46,11 @@ def parse_arguments(args: List[str]) -> argparse.Namespace:
     )
     
     parser.add_argument(
+        "--base-url",
+        help="Base URL for the LLM provider (for OpenAI-compatible providers)"
+    )
+    
+    parser.add_argument(
         "--work-dir",
         required=True,
         help="Working directory for the TDD process"
@@ -76,6 +81,8 @@ def main() -> None:
     print(f"  Kata description: {args.kata_description}")
     print(f"  Model: {args.model}")
     print(f"  Provider: {args.provider}")
+    if args.base_url:
+        print(f"  Base URL: {args.base_url}")
     print(f"  Work directory: {args.work_dir}")
     print(f"  Max cycles: {args.max_cycles}")
     
@@ -84,6 +91,7 @@ def main() -> None:
         model=args.model,
         provider=args.provider,
         api_key=args.api_key,
+        base_url=args.base_url,
         max_cycles=args.max_cycles
     )
     

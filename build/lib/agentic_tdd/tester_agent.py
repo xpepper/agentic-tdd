@@ -7,6 +7,7 @@ from .core import Agent, AgentException
 from .llm import LLMProvider, create_tester_prompt
 from .test_runner import TestRunner
 from .logger import get_agent_logger
+from .utils import generate_test_module_name
 import os
 from pathlib import Path
 
@@ -20,7 +21,8 @@ class TesterAgent(Agent):
             self.llm_provider = LLMProvider(
                 model=config.model,
                 provider=config.provider,
-                api_key=config.api_key
+                api_key=config.api_key,
+                base_url=config.base_url
             )
             self.test_runner = TestRunner(self.work_dir)
             self.logger.info("Tester agent initialized successfully")
@@ -81,7 +83,7 @@ class TesterAgent(Agent):
             test_content = self.llm_provider.generate_code(prompt, language="python")
             
             # Create a test file name based on the kata
-            test_file_name = "test_calculator.py"  # Default name, could be more dynamic
+            test_file_name = f"{generate_test_module_name(self.kata_content)}.py"
             test_file = self.work_dir / test_file_name
             
             self.logger.debug(f"Writing generated test to file: {test_file}")

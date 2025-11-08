@@ -54,8 +54,10 @@ class AgentConfig:
                  model: str = "gpt-4",
                  provider: str = "openai", 
                  api_key: Optional[str] = None,
+                 base_url: Optional[str] = None,
                  max_cycles: int = 10):
         self.model = model
         self.provider = provider
         self.api_key = api_key or os.getenv(f"{provider.upper()}_API_KEY")
+        self.base_url = base_url
         self.max_cycles = max_cycles
