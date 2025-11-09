@@ -2,7 +2,8 @@
 LLM interaction module for agentic-tdd.
 This module provides utilities for interacting with various LLM providers.
 """
-from typing import Optional, Dict, Any
+
+from typing import Optional
 from langchain_openai import ChatOpenAI
 import os
 
@@ -10,7 +11,13 @@ import os
 class LLMProvider:
     """Provider for LLM interactions."""
 
-    def __init__(self, model: str = "gpt-4", provider: str = "openai", api_key: Optional[str] = None, base_url: Optional[str] = None):
+    def __init__(
+        self,
+        model: str = "gpt-4",
+        provider: str = "openai",
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+    ):
         self.model = model
         self.provider = provider
         self.api_key = api_key or os.getenv(f"{provider.upper()}_API_KEY")
@@ -18,11 +25,7 @@ class LLMProvider:
 
         # Initialize the LLM based on provider
         if provider.lower() == "openai":
-            self.llm = ChatOpenAI(
-                model=model,
-                api_key=self.api_key,
-                temperature=0.7
-            )
+            self.llm = ChatOpenAI(model=model, api_key=self.api_key, temperature=0.7)
         else:
             # For other providers that are OpenAI-compatible
             # Use provided base_url if available, otherwise construct from provider name
@@ -35,7 +38,7 @@ class LLMProvider:
                 model=model,
                 openai_api_key=self.api_key,
                 openai_api_base=api_base,
-                temperature=0.7
+                temperature=0.7,
             )
 
     def generate_text(self, prompt: str, **kwargs) -> str:
@@ -75,7 +78,9 @@ class LLMProvider:
             raise Exception(f"Error generating code with {self.provider}: {str(e)}")
 
 
-def create_tester_prompt(kata_description: str, existing_code: str = "", existing_tests: str = "") -> str:
+def create_tester_prompt(
+    kata_description: str, existing_code: str = "", existing_tests: str = ""
+) -> str:
     """Create a prompt for the tester agent to generate a failing test."""
     prompt = f"""
 You are a Test-Driven Development expert. Your task is to write a single, focused unit test
@@ -104,7 +109,9 @@ Please provide the test code:
     return prompt
 
 
-def create_implementer_prompt(kata_description: str, failing_test: str, existing_code: str = "") -> str:
+def create_implementer_prompt(
+    kata_description: str, failing_test: str, existing_code: str = ""
+) -> str:
     """Create a prompt for the implementer agent to make a test pass."""
     prompt = f"""
 You are a software development expert following Test-Driven Development principles.
@@ -131,7 +138,9 @@ Please provide the implementation code:
     return prompt
 
 
-def create_refactorer_prompt(kata_description: str, code_to_refactor: str, existing_tests: str) -> str:
+def create_refactorer_prompt(
+    kata_description: str, code_to_refactor: str, existing_tests: str
+) -> str:
     """Create a prompt for the refactorer agent to improve code quality."""
     prompt = f"""
 You are a software development expert focused on code quality and maintainability.
@@ -161,7 +170,9 @@ Please provide the refactored code:
     return prompt
 
 
-def create_commit_message_prompt(agent_type: str, kata_description: str, agent_result: dict, cycle_count: int) -> str:
+def create_commit_message_prompt(
+    agent_type: str, kata_description: str, agent_result: dict, cycle_count: int
+) -> str:
     """Create a prompt for generating a commit message."""
     # Extract relevant information based on agent type
     if agent_type == "test":
@@ -196,6 +207,8 @@ Examples:
 - test: add failing test for rover movement validation
 - feat: implement rover forward movement with boundary checks
 - refactor: extract rover heading logic into separate functions
+
+IMPORTANT: Return ONLY the commit message text, without any markdown formatting, code blocks, or extra explanation.
 
 Generate an appropriate commit message:
 """
