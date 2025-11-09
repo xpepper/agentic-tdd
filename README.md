@@ -6,15 +6,52 @@ Agentic TDD is a multi-agent Test-Driven Development (TDD) CLI tool that automat
 
 The agentic-tdd tool uses multiple specialized AI agents to perform different roles in the TDD process:
 
-- **Tester Agent**: Writes failing unit tests that capture the next required behavior 
+- **Tester Agent**: Writes failing unit tests that capture the next required behavior
 - **Implementer Agent**: Makes minimal changes to code to make tests pass
 - **Refactorer Agent**: Improves code quality, readability, and maintainability
 - **Supervisor Agent**: Oversees the process and intervenes when agents get stuck
 
 ## Installation
 
-To install agentic-tdd, you'll need Python 3.8+ and pip:
+### Prerequisites
 
+- Python 3.8 or higher
+- pip or Poetry
+
+### Installation Options
+
+#### Option 1: Using Virtual Environment (Recommended for Development)
+
+1. Create and activate a virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On macOS/Linux
+# or
+.venv\Scripts\activate  # On Windows
+```
+
+2. Install in development mode:
+```bash
+pip install -e .[dev]
+```
+
+This installs the package in editable mode with development dependencies (pytest, ruff, mypy, etc.).
+
+#### Option 2: Using Poetry
+
+1. Install dependencies with Poetry:
+```bash
+poetry install
+```
+
+2. Activate the Poetry shell:
+```bash
+poetry shell
+```
+
+#### Option 3: Install from PyPI (Coming Soon)
+
+Once published to PyPI, you'll be able to install directly:
 ```bash
 pip install agentic-tdd
 ```
